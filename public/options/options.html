@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fuel Consumption — Settings</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="page">
+      <h1 class="title"><span aria-hidden="true">⛽</span> Fuel Consumption for Google Maps</h1>
+      <p class="intro">
+        Enter your car's average consumption and your local fuel price. The estimate then appears in
+        every driving route card in Google Maps directions.
+      </p>
+
+      <form id="form" class="form">
+        <fieldset class="group">
+          <legend>Vehicle</legend>
+
+          <div class="field">
+            <label for="consumption">Average consumption</label>
+            <div class="field__row">
+              <input
+                type="number"
+                id="consumption"
+                step="any"
+                min="0.1"
+                inputmode="decimal"
+                required
+              />
+              <select id="consumptionUnit">
+                <option value="l_per_100km">litres per 100 km</option>
+                <option value="km_per_l">km per litre</option>
+                <option value="mpg_us">miles per gallon (US)</option>
+                <option value="mpg_uk">miles per gallon (UK)</option>
+              </select>
+            </div>
+            <p class="hint">Long-term average from your trip computer is the most accurate value.</p>
+          </div>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>Fuel price</legend>
+
+          <div class="field">
+            <label for="price">Price</label>
+            <div class="field__row">
+              <input type="number" id="price" step="any" min="0" inputmode="decimal" />
+              <select id="priceUnit">
+                <option value="per_litre">per litre</option>
+                <option value="per_gallon_us">per gallon (US)</option>
+                <option value="per_gallon_uk">per gallon (UK)</option>
+              </select>
+              <input
+                type="text"
+                id="currency"
+                class="field__currency"
+                maxlength="8"
+                aria-label="Currency label"
+                placeholder="€"
+              />
+            </div>
+            <p class="hint">The currency is just a label shown next to the amount.</p>
+          </div>
+
+          <label class="check">
+            <input type="checkbox" id="showCost" />
+            <span>Show the estimated cost, not only the volume</span>
+          </label>
+        </fieldset>
+
+        <fieldset class="group">
+          <legend>Display</legend>
+          <label class="check">
+            <input type="checkbox" id="enabled" />
+            <span>Show estimates in Google Maps</span>
+          </label>
+        </fieldset>
+
+        <p class="preview" id="preview" aria-live="polite"></p>
+
+        <div class="actions">
+          <button type="submit" class="button button--primary">Save</button>
+          <button type="button" id="reset" class="button">Reset to defaults</button>
+          <span class="status" id="status" aria-live="polite"></span>
+        </div>
+      </form>
+
+      <p class="note">
+        The estimate is a flat average-consumption model. Google Maps does not expose elevation,
+        traffic or driving style to extensions, so treat the number as a planning aid.
+      </p>
+    </main>
+
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

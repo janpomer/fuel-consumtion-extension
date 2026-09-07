@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Fuel Consumption</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="header">
+      <span class="header__icon" aria-hidden="true">⛽</span>
+      <h1 class="header__title">Fuel Consumption</h1>
+      <label class="switch" title="Show estimates in Google Maps">
+        <input type="checkbox" id="enabled" />
+        <span class="switch__label">On</span>
+      </label>
+    </header>
+
+    <form id="form" class="form">
+      <div class="field">
+        <label for="consumption">Consumption</label>
+        <div class="field__row">
+          <input type="number" id="consumption" step="any" min="0.1" inputmode="decimal" required />
+          <select id="consumptionUnit">
+            <option value="l_per_100km">l/100 km</option>
+            <option value="km_per_l">km/l</option>
+            <option value="mpg_us">mpg (US)</option>
+            <option value="mpg_uk">mpg (UK)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="price">Fuel price</label>
+        <div class="field__row">
+          <input type="number" id="price" step="any" min="0" inputmode="decimal" />
+          <select id="priceUnit">
+            <option value="per_litre">per litre</option>
+            <option value="per_gallon_us">per gal (US)</option>
+            <option value="per_gallon_uk">per gal (UK)</option>
+          </select>
+          <input type="text" id="currency" class="field__currency" maxlength="8" aria-label="Currency" />
+        </div>
+      </div>
+    </form>
+
+    <p class="preview" id="preview" aria-live="polite"></p>
+
+    <footer class="footer">
+      <span class="footer__status" id="status" aria-live="polite"></span>
+      <button type="button" id="openOptions" class="link">All settings</button>
+    </footer>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

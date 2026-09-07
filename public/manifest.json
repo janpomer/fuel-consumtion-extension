@@ -1,0 +1,63 @@
+{
+  "manifest_version": 3,
+  "name": "Fuel Consumption for Google Maps",
+  "version": "0.1.0",
+  "description": "Shows how much fuel a Google Maps driving route needs, and what it costs.",
+  "minimum_chrome_version": "102",
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["storage"],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "Fuel Consumption",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": false
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.google.com/maps*",
+        "https://maps.google.com/*",
+        "https://www.google.cz/maps*",
+        "https://www.google.sk/maps*",
+        "https://www.google.de/maps*",
+        "https://www.google.at/maps*",
+        "https://www.google.pl/maps*",
+        "https://www.google.co.uk/maps*"
+      ],
+      "js": ["content/bootstrap.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["content/*.js", "lib/*.js"],
+      "matches": [
+        "https://www.google.com/*",
+        "https://maps.google.com/*",
+        "https://www.google.cz/*",
+        "https://www.google.sk/*",
+        "https://www.google.de/*",
+        "https://www.google.at/*",
+        "https://www.google.pl/*",
+        "https://www.google.co.uk/*"
+      ]
+    }
+  ]
+}
