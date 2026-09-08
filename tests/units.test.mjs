@@ -40,6 +40,9 @@ test('decides between decimal and thousands separators', () => {
   assert.equal(parseLocalisedNumber('12,4'), 12.4);
   assert.equal(parseLocalisedNumber('1,234'), 1234);
   assert.equal(parseLocalisedNumber('1 234,5'), 1234.5);
+  assert.equal(parseLocalisedNumber('1.234.567'), 1_234_567);
+  assert.equal(parseLocalisedNumber('1,234,567.8'), 1_234_567.8);
   assert.equal(parseLocalisedNumber('7'), 7);
   assert.equal(parseLocalisedNumber('abc'), null);
+  assert.equal(parseLocalisedNumber('7,'), null);
 });

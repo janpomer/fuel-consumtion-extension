@@ -3,7 +3,6 @@
 // No bundler — the extension loads plain ES modules straight from disk.
 import { spawn } from 'node:child_process';
 import { cp, mkdir, rm } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
@@ -12,10 +11,6 @@ const dist = path.join(root, 'dist');
 const watch = process.argv.includes('--watch');
 
 const tsc = path.join(root, 'node_modules', 'typescript', 'bin', 'tsc');
-if (!existsSync(tsc)) {
-  console.error('TypeScript is not installed. Run: npm install');
-  process.exit(1);
-}
 
 if (!watch) await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });

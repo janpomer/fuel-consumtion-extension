@@ -51,10 +51,12 @@ npm run watch      # rebuild dist/ on every change to src/ or public/
 npm run build      # one-off build into dist/
 npm test           # builds, then runs the unit tests against dist/
 npm run typecheck  # tsc --noEmit, no output written
-npm run icons      # regenerate public/icons/*.png
 npm run package    # build, then zip dist/ for the Chrome Web Store
 npm run clean      # remove dist/
 ```
+
+The icons in `public/icons/` are tracked in git; regenerate them from an SVG with
+`magick` if they ever change.
 
 ### The development loop
 
@@ -86,26 +88,28 @@ consoles with `chrome.storage.sync.get(console.log)`.
 ```
 public/                  static files, copied verbatim into dist/
 ├── manifest.json        MV3 manifest
-├── icons/               generated PNGs (npm run icons)
+├── icons/               tracked PNGs
+├── shared/tokens.css    colour tokens shared by popup + options
 ├── popup/               popup markup + styles
 └── options/             options page markup + styles
 src/
-├── lib/                 shared, DOM-free logic
+├── lib/                 shared logic (everything but form.ts is DOM-free)
 │   ├── types.ts         Settings / Estimate shapes
 │   ├── units.ts         distance parsing, unit constants
 │   ├── fuel.ts          consumption conversion + the estimate itself
 │   ├── format.ts        locale-aware number/label formatting
-│   └── settings.ts      chrome.storage access, defaults, validation
+│   ├── settings.ts      chrome.storage access, defaults, validation
+│   └── form.ts          bits shared by the popup and options UIs
 ├── content/             what runs inside Google Maps
 │   ├── bootstrap.ts     classic-script entry, dynamic-imports main.js
 │   ├── main.ts          lifecycle: load settings, observe DOM, refresh
 │   ├── maps-dom.ts      finds route cards and their distances
 │   └── panel.ts         renders the injected estimate
 ├── background/
-│   └── service-worker.ts  seeds defaults, opens options on install
+│   └── service-worker.ts  opens the options page on install
 ├── popup/popup.ts       quick consumption/price editing
 └── options/options.ts   full settings form
-scripts/                 build, icon generation, packaging (plain Node)
+scripts/                 build + packaging (plain Node)
 tests/                   node:test suites, run against dist/ (npm test builds first)
 ```
 

@@ -1,0 +1,24 @@
+:root {
+  --bg: #ffffff;
+  --fg: #202124;
+  --muted: #5f6368;
+  --accent: #1a73e8;
+  --border: #dadce0;
+  --surface: #f8f9fa;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #202124;
+    --fg: #e8eaed;
+    --muted: #9aa0a6;
+    --accent: #8ab4f8;
+    --border: #3c4043;
+    --surface: #292a2d;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}

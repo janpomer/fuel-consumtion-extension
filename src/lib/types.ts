@@ -1,8 +1,10 @@
 /** How the user prefers to express their car's fuel consumption. */
-export type ConsumptionUnit = 'l_per_100km' | 'km_per_l' | 'mpg_us' | 'mpg_uk';
+export const CONSUMPTION_UNITS = ['l_per_100km', 'km_per_l', 'mpg_us', 'mpg_uk'] as const;
+export type ConsumptionUnit = (typeof CONSUMPTION_UNITS)[number];
 
 /** Volume unit the fuel price refers to. */
-export type PriceUnit = 'per_litre' | 'per_gallon_us' | 'per_gallon_uk';
+export const PRICE_UNITS = ['per_litre', 'per_gallon_us', 'per_gallon_uk'] as const;
+export type PriceUnit = (typeof PRICE_UNITS)[number];
 
 export interface Settings {
   /** Consumption figure, expressed in `consumptionUnit`. */

@@ -2,8 +2,8 @@ import type { ConsumptionUnit, Estimate, Settings } from './types.js';
 import {
   LITRES_PER_GALLON_UK,
   LITRES_PER_GALLON_US,
+  LITRES_PER_VOLUME_UNIT,
   METRES_PER_MILE,
-  litresPerVolumeUnit,
 } from './units.js';
 
 /** Converts any supported consumption figure to litres per 100 km. */
@@ -39,7 +39,7 @@ export function estimate(distanceMeters: number, settings: Settings): Estimate |
 
   let cost: number | null = null;
   if (settings.showCost && Number.isFinite(settings.price) && settings.price > 0) {
-    const pricePerLitre = settings.price / litresPerVolumeUnit(settings.priceUnit);
+    const pricePerLitre = settings.price / LITRES_PER_VOLUME_UNIT[settings.priceUnit];
     cost = litres * pricePerLitre;
   }
 

@@ -1,9 +1,6 @@
-import { estimate } from '../lib/fuel.js';
-import { formatEstimate } from '../lib/format.js';
+import { byId, flash, renderPreview } from '../lib/form.js';
 import { DEFAULT_SETTINGS, loadSettings, sanitiseSettings, saveSettings } from '../lib/settings.js';
 import type { Settings } from '../lib/types.js';
-
-const PREVIEW_DISTANCE_M = 100_000;
 
 const fields = {
   consumption: byId<HTMLInputElement>('consumption'),
@@ -15,7 +12,7 @@ const fields = {
   enabled: byId<HTMLInputElement>('enabled'),
 };
 const form = byId<HTMLFormElement>('form');
-const preview = byId<HTMLParagraphElement>('preview');
+const preview = byId<HTMLElement>('preview');
 const status = byId<HTMLSpanElement>('status');
 
 void main();
@@ -44,8 +41,8 @@ async function main(): Promise<void> {
 
 function save(settings: Settings, confirmation: string): void {
   saveSettings(settings).then(
-    () => flash(confirmation),
-    () => flash('Could not save settings'),
+    () => flash(status, confirmation),
+    () => flash(status, 'Could not save settings'),
   );
 }
 
@@ -73,28 +70,5 @@ function read(): Settings {
 
 function updatePreview(): void {
   // An empty or out-of-range field would otherwise preview the default value.
-  const settings = form.checkValidity() ? read() : null;
-  const result = settings ? estimate(PREVIEW_DISTANCE_M, settings) : null;
-
-  preview.textContent = '';
-  const label = document.createElement('span');
-  label.textContent = 'A 100 km drive ≈ ';
-  const value = document.createElement('strong');
-  value.textContent =
-    result && settings ? formatEstimate(result, settings.currency, navigator.language) : '—';
-
-  preview.append(label, value);
-}
-
-function flash(message: string): void {
-  status.textContent = message;
-  setTimeout(() => {
-    if (status.textContent === message) status.textContent = '';
-  }, 2000);
-}
-
-function byId<T extends HTMLElement>(id: string): T {
-  const element = document.getElementById(id);
-  if (!element) throw new Error(`Missing element #${id}`);
-  return element as T;
+  renderPreview(preview, form.checkValidity() ? read() : null);
 }

@@ -1,9 +1,7 @@
-import { estimate } from '../lib/fuel.js';
-import { formatEstimate } from '../lib/format.js';
+import { byId, flash, renderPreview } from '../lib/form.js';
 import { loadSettings, sanitiseSettings, saveSettings } from '../lib/settings.js';
 import type { Settings } from '../lib/types.js';
 
-const PREVIEW_DISTANCE_M = 100_000;
 const SAVE_DEBOUNCE_MS = 300;
 
 const form = byId<HTMLFormElement>('form');
@@ -15,7 +13,7 @@ const fields = {
   priceUnit: byId<HTMLSelectElement>('priceUnit'),
   currency: byId<HTMLInputElement>('currency'),
 };
-const preview = byId<HTMLParagraphElement>('preview');
+const preview = byId<HTMLElement>('preview');
 const status = byId<HTMLSpanElement>('status');
 
 /**
@@ -30,7 +28,7 @@ void main();
 async function main(): Promise<void> {
   current = await loadSettings();
   fill(current);
-  updatePreview(current);
+  renderPreview(preview, current);
 
   // The popup has no submit button; make sure Enter never reloads it.
   form.addEventListener('submit', (event) => event.preventDefault());
@@ -51,18 +49,18 @@ function onInput(): void {
   // While a field is empty or out of range, show nothing and save nothing,
   // otherwise a half-typed value would be replaced by the default in storage.
   if (!form.checkValidity()) {
-    updatePreview(null);
+    renderPreview(preview, null);
     return;
   }
 
   current = read();
-  updatePreview(current);
+  renderPreview(preview, current);
 
   const pending = current;
   saveTimer = setTimeout(() => {
     saveSettings(pending).then(
-      () => flash('Saved'),
-      () => flash('Could not save'),
+      () => flash(status, 'Saved'),
+      () => flash(status, 'Could not save'),
     );
   }, SAVE_DEBOUNCE_MS);
 }
@@ -86,31 +84,4 @@ function read(): Settings {
     priceUnit: fields.priceUnit.value as Settings['priceUnit'],
     currency: fields.currency.value,
   });
-}
-
-/** Shows what a round 100 km would cost, as a sanity check on the inputs. */
-function updatePreview(settings: Settings | null): void {
-  const result = settings ? estimate(PREVIEW_DISTANCE_M, settings) : null;
-  preview.textContent = '';
-
-  const label = document.createElement('span');
-  label.textContent = '100 km ≈ ';
-  const value = document.createElement('strong');
-  value.textContent =
-    result && settings ? formatEstimate(result, settings.currency, navigator.language) : '—';
-
-  preview.append(label, value);
-}
-
-function flash(message: string): void {
-  status.textContent = message;
-  setTimeout(() => {
-    if (status.textContent === message) status.textContent = '';
-  }, 1500);
-}
-
-function byId<T extends HTMLElement>(id: string): T {
-  const element = document.getElementById(id);
-  if (!element) throw new Error(`Missing element #${id}`);
-  return element as T;
 }

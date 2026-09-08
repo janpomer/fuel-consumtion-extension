@@ -12,12 +12,7 @@ export interface RouteCard {
  * are obfuscated and change often, so we only rely on ids and data attributes,
  * which have been stable for years.
  */
-const ROUTE_CARD_SELECTORS = [
-  'div[id^="section-directions-trip-"]',
-  'div[data-trip-index]',
-] as const;
-
-const ROUTE_CARD_SELECTOR = ROUTE_CARD_SELECTORS.join(', ');
+const ROUTE_CARD_SELECTOR = 'div[id^="section-directions-trip-"], div[data-trip-index]';
 
 /** Labels longer than this are prose, not a distance such as "12,4 km". */
 const MAX_LABEL_LENGTH = 40;
