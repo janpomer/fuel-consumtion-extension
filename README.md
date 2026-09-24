@@ -10,6 +10,10 @@ via D1
 ⛽ 13.5 l · 23.64 €
 ```
 
+The same figure is also pinned onto each route drawn on the map, labelled with
+the road names so alternatives can be told apart; the selected route's label is
+highlighted.
+
 You configure your car's average consumption and your local fuel price once; the
 extension reads the route distance that Maps already renders and does the math.
 
@@ -97,6 +101,7 @@ src/
 │   ├── types.ts         Settings / Estimate shapes
 │   ├── units.ts         distance parsing, unit constants
 │   ├── fuel.ts          consumption conversion + the estimate itself
+│   ├── route-geo.ts     directions parsing, Web Mercator projection, label placement
 │   ├── format.ts        locale-aware number/label formatting
 │   ├── settings.ts      chrome.storage access, defaults, validation
 │   └── form.ts          bits shared by the popup and options UIs
@@ -104,7 +109,8 @@ src/
 │   ├── bootstrap.ts     classic-script entry, dynamic-imports main.js
 │   ├── main.ts          lifecycle: load settings, observe DOM, refresh
 │   ├── maps-dom.ts      finds route cards and their distances
-│   └── panel.ts         renders the injected estimate
+│   ├── map-routes.ts    route geometry + where each map label goes
+│   └── panel.ts         renders the injected estimates (cards + map)
 ├── background/
 │   └── service-worker.ts  opens the options page on install
 ├── popup/popup.ts       quick consumption/price editing
@@ -133,6 +139,14 @@ of the code can be ordinary ES modules with no bundler in the picture.
    `850 m`, `200 yd`, `300 ft`, and both decimal separators.
 3. `fuel.ts` converts your consumption to l/100 km, multiplies by the distance,
    and multiplies by the price per litre.
+
+For the labels on the map, `map-routes.ts` re-reads the directions response Maps
+just fetched (`/maps/preview/directions`, same origin) to get each route's
+geometry, projects it with the viewport in the URL (`@lat,lng,zoomz`), and pins
+each label where that route strays furthest from the others. Maps draws the
+routes in a worker-owned canvas, so we overlay our own layer instead of drawing
+into it. Labels hide while the map moves and return once the URL catches up;
+tilted/rotated 3D views and satellite altitude views get no map labels.
 
 It is a flat average-consumption model. Maps does not expose elevation, traffic
 or driving style to extensions, so treat the number as a planning aid.
@@ -166,7 +180,9 @@ to the Chrome Web Store (requires the `zip` CLI). Bump `version` in **both**
 
 ## Privacy
 
-No network requests, no analytics, no tracking. Settings are stored with
+No analytics, no tracking, and no requests to anyone but Google Maps itself: the
+only request the extension makes is repeating Maps' own directions request once
+per route change, to read the route geometry for the map labels. Settings are stored with
 `chrome.storage.sync` (synced by your own Chrome profile). The only permission
 requested is `storage`, plus host access to Google Maps pages.
 

@@ -1,5 +1,14 @@
 const STYLE_ID = 'fce-styles';
 const PANEL_CLASS = 'fce-estimate';
+const MAP_LAYER_CLASS = 'fce-map-labels';
+
+export interface MapLabel {
+  x: number;
+  y: number;
+  title: string;
+  text: string;
+  selected: boolean;
+}
 
 /** Injects our stylesheet once per page. */
 export function ensureStyles(): void {
@@ -27,6 +36,44 @@ export function ensureStyles(): void {
     }
     .${PANEL_CLASS}__value {
       font-weight: 600;
+    }
+    .${MAP_LAYER_CLASS} {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .${MAP_LAYER_CLASS}__pill {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      max-width: 180px;
+      transform: translate(-50%, 10px);
+      padding: 3px 10px;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+      color: #5f6368;
+      font: 500 11px/1.35 Roboto, Arial, sans-serif;
+      white-space: nowrap;
+    }
+    .${MAP_LAYER_CLASS}__pill > span {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .${MAP_LAYER_CLASS}__pill > span:last-child {
+      font-weight: 700;
+      font-size: 12px;
+    }
+    .${MAP_LAYER_CLASS}__pill--selected {
+      z-index: 1;
+      background: #1a73e8;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      color: #fff;
+      font-size: 12px;
+    }
+    .${MAP_LAYER_CLASS}__pill--selected > span:last-child {
+      font-size: 13px;
     }
     @media (prefers-color-scheme: dark) {
       .${PANEL_CLASS} {
@@ -64,7 +111,44 @@ export function renderEstimate(card: HTMLElement, value: string, tooltip: string
   if (panel.title !== tooltip) panel.title = tooltip;
 }
 
+/**
+ * Pins one estimate pill per route onto the map. The layer sits inside the map
+ * container, so the directions sidebar still covers it like it covers the map.
+ */
+export function renderMapLabels(map: HTMLElement, labels: MapLabel[]): void {
+  let layer = map.querySelector<HTMLElement>(`:scope > .${MAP_LAYER_CLASS}`);
+
+  if (!layer) {
+    layer = document.createElement('div');
+    layer.className = MAP_LAYER_CLASS;
+    // Same figures as the route cards in the sidebar, which screen readers get.
+    layer.setAttribute('aria-hidden', 'true');
+    map.appendChild(layer);
+  }
+
+  // Skipping unchanged renders also keeps our own mutations from re-triggering refresh.
+  const key = JSON.stringify(labels);
+  if (layer.dataset.key === key) return;
+  layer.dataset.key = key;
+
+  layer.replaceChildren(
+    ...labels.map(({ x, y, title, text, selected }) => {
+      const pill = document.createElement('div');
+      pill.className = `${MAP_LAYER_CLASS}__pill${selected ? ` ${MAP_LAYER_CLASS}__pill--selected` : ''}`;
+      pill.style.left = `${x}px`;
+      pill.style.top = `${y}px`;
+
+      const road = document.createElement('span');
+      road.textContent = title;
+      const value = document.createElement('span');
+      value.textContent = `⛽ ${text}`;
+      pill.append(...(title ? [road] : []), value);
+      return pill;
+    }),
+  );
+}
+
 /** Removes every estimate we have injected. */
 export function removeAllEstimates(): void {
-  for (const panel of document.querySelectorAll(`.${PANEL_CLASS}`)) panel.remove();
+  for (const panel of document.querySelectorAll(`.${PANEL_CLASS}, .${MAP_LAYER_CLASS}`)) panel.remove();
 }

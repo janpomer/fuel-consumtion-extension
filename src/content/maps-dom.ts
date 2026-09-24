@@ -5,6 +5,8 @@ export interface RouteCard {
   element: HTMLElement;
   /** Total route distance in metres, as rendered by Google Maps. */
   distanceMeters: number;
+  /** Position in Maps' route list, or `null` if the card doesn't say. */
+  index: number | null;
 }
 
 /**
@@ -33,6 +35,15 @@ export function isDrivingMode(): boolean {
 }
 
 /**
+ * Index of the route picked in the directions list. Maps adds `!5i<n>` to the
+ * URL once the user picks another option; without it the first one is selected.
+ */
+export function selectedRouteIndex(): number {
+  const match = /!5i(\d+)/.exec(location.href);
+  return match ? Number(match[1]) : 0;
+}
+
+/**
  * Every route option currently listed, with its total distance.
  *
  * When both selectors match nested elements of the same route, only the
@@ -45,7 +56,8 @@ export function findRouteCards(): RouteCard[] {
     if (element.parentElement?.closest(ROUTE_CARD_SELECTOR)) continue;
 
     const distanceMeters = extractDistance(element);
-    if (distanceMeters !== null) cards.push({ element, distanceMeters });
+    const index = Number(element.dataset.tripIndex ?? element.id.replace('section-directions-trip-', ''));
+    if (distanceMeters !== null) cards.push({ element, distanceMeters, index: Number.isInteger(index) ? index : null });
   }
 
   return cards;
