@@ -21,6 +21,12 @@ export interface Settings {
   enabled: boolean;
   /** Also pin the estimate onto the routes drawn on the map, not only the route cards. */
   showOnMap: boolean;
+  /** Mark on the selected route where to refuel, from `tankLitres` and `reserveKm`. */
+  showRefuelStops: boolean;
+  /** Fuel tank capacity in litres. */
+  tankLitres: number;
+  /** Range left, in km, at which the driver wants to refuel. */
+  reserveKm: number;
 }
 
 /** A route estimate, always kept in SI internally. */

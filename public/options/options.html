@@ -82,6 +82,33 @@
           </label>
         </fieldset>
 
+        <fieldset class="group">
+          <legend>Refuelling</legend>
+          <label class="check">
+            <input type="checkbox" id="showRefuelStops" />
+            <span>Mark on the selected route where to refuel</span>
+          </label>
+
+          <div class="field">
+            <label for="tankLitres">Fuel tank size</label>
+            <div class="field__row">
+              <input type="number" id="tankLitres" step="any" min="1" inputmode="decimal" required />
+              <span class="field__unit">litres</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="reserveKm">Refuel when range drops to</label>
+            <div class="field__row">
+              <input type="number" id="reserveKm" step="any" min="0" inputmode="decimal" required />
+              <span class="field__unit">km</span>
+            </div>
+            <p class="hint">
+              Assumes you start with a full tank and fill it up at every stop.
+            </p>
+          </div>
+        </fieldset>
+
         <p class="preview" aria-live="polite">A 100 km drive ≈ <strong id="preview">—</strong></p>
 
         <div class="actions">

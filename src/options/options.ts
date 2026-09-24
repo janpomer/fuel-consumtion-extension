@@ -11,6 +11,9 @@ const fields = {
   showCost: byId<HTMLInputElement>('showCost'),
   enabled: byId<HTMLInputElement>('enabled'),
   showOnMap: byId<HTMLInputElement>('showOnMap'),
+  showRefuelStops: byId<HTMLInputElement>('showRefuelStops'),
+  tankLitres: byId<HTMLInputElement>('tankLitres'),
+  reserveKm: byId<HTMLInputElement>('reserveKm'),
 };
 const form = byId<HTMLFormElement>('form');
 const preview = byId<HTMLElement>('preview');
@@ -56,6 +59,9 @@ function fill(settings: Settings): void {
   fields.showCost.checked = settings.showCost;
   fields.enabled.checked = settings.enabled;
   fields.showOnMap.checked = settings.showOnMap;
+  fields.showRefuelStops.checked = settings.showRefuelStops;
+  fields.tankLitres.value = String(settings.tankLitres);
+  fields.reserveKm.value = String(settings.reserveKm);
 }
 
 function read(): Settings {
@@ -68,6 +74,9 @@ function read(): Settings {
     showCost: fields.showCost.checked,
     enabled: fields.enabled.checked,
     showOnMap: fields.showOnMap.checked,
+    showRefuelStops: fields.showRefuelStops.checked,
+    tankLitres: Number(fields.tankLitres.value),
+    reserveKm: Number(fields.reserveKm.value),
   });
 }
 

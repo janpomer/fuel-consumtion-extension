@@ -15,6 +15,10 @@ the road names so alternatives can be told apart; the selected route's label is
 highlighted. Turn the map labels off in the options page if you only want the
 route cards.
 
+Optionally, enter your tank size and the range at which you like to refuel, and
+the selected route gets a ⛽ marker wherever a stop is due (assuming a full tank
+at the start and a fill-up at every stop).
+
 You configure your car's average consumption and your local fuel price once; the
 extension reads the route distance that Maps already renders and does the math.
 

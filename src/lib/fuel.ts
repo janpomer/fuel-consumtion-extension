@@ -23,6 +23,19 @@ export function toLitresPer100Km(consumption: number, unit: ConsumptionUnit): nu
 }
 
 /**
+ * Distance between refuelling stops: how far a full tank gets before only
+ * `reserveKm` of range is left. Assumes the trip starts with a full tank and
+ * every stop fills it up again. `null` when a tank doesn't reach the reserve.
+ */
+export function refuelLegMeters(settings: Settings): number | null {
+  const lPer100Km = toLitresPer100Km(settings.consumption, settings.consumptionUnit);
+  if (lPer100Km === null || !(settings.tankLitres > 0)) return null;
+
+  const legKm = (settings.tankLitres / lPer100Km) * 100 - settings.reserveKm;
+  return legKm > 0 ? legKm * 1000 : null;
+}
+
+/**
  * Estimates fuel used over `distanceMeters` for the configured car, plus the
  * cost of that fuel when a price is configured.
  *

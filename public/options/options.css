@@ -49,8 +49,15 @@ body {
 }
 
 .field + .check,
-.check + .check {
+.check + .check,
+.check + .field,
+.field + .field {
   margin-top: 12px;
+}
+
+.field__unit {
+  align-self: center;
+  color: var(--muted);
 }
 
 .field > label {

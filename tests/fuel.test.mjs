@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-const { estimate, toLitresPer100Km } = await import('../dist/lib/fuel.js');
+const { estimate, refuelLegMeters, toLitresPer100Km } = await import('../dist/lib/fuel.js');
 const { formatEstimate } = await import('../dist/lib/format.js');
 
 const base = {
@@ -48,4 +48,11 @@ test('rejects nonsensical distances', () => {
 test('formats the injected label', () => {
   const result = estimate(100_000, base);
   assert.equal(formatEstimate(result, '€', 'en-GB'), '7.00 l · 10.50 €');
+});
+
+test('spaces refuelling stops by a full tank minus the reserve', () => {
+  // 50 l at 5 l/100 km reaches 1000 km; refuel with 100 km left.
+  assert.equal(refuelLegMeters({ ...base, consumption: 5, tankLitres: 50, reserveKm: 100 }), 900_000);
+  assert.equal(refuelLegMeters({ ...base, consumption: 5, tankLitres: 50, reserveKm: 1000 }), null);
+  assert.equal(refuelLegMeters({ ...base, consumption: 5, tankLitres: 0, reserveKm: 0 }), null);
 });

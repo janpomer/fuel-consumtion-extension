@@ -1,8 +1,8 @@
-import { estimate } from '../lib/fuel.js';
+import { estimate, refuelLegMeters } from '../lib/fuel.js';
 import { formatEstimate } from '../lib/format.js';
 import { DEFAULT_SETTINGS, loadSettings, onSettingsChanged } from '../lib/settings.js';
 import type { ConsumptionUnit, Settings } from '../lib/types.js';
-import { findMap, placeRoutes, watchRoutes } from './map-routes.js';
+import { findMap, placeRefuelStops, placeRoutes, watchRoutes } from './map-routes.js';
 import { findRouteCards, isDirectionsView, isDrivingMode, selectedRouteIndex } from './maps-dom.js';
 import { ensureStyles, removeAllEstimates, renderEstimate, renderMapLabels } from './panel.js';
 
@@ -31,7 +31,7 @@ export async function init(): Promise<void> {
 
   observeMaps();
   // ponytail: turning the map option on shows labels from the next route change, not the current one.
-  watchRoutes(refresh, () => settings.enabled && settings.showOnMap);
+  watchRoutes(refresh, () => settings.enabled && (settings.showOnMap || settings.showRefuelStops));
   refresh();
 }
 
@@ -80,9 +80,11 @@ function refresh(): void {
   const map = findMap();
   if (!map) return;
   const selected = selectedRouteIndex();
+  const leg = settings.showRefuelStops ? refuelLegMeters(settings) : null;
+  const stops = leg ? placeRefuelStops(map, selected, leg) : [];
   renderMapLabels(
     map,
-    (settings.showOnMap ? placeRoutes(map) : []).flatMap(({ index, title, distanceMeters, x, y }) => {
+    (settings.showOnMap ? placeRoutes(map, stops) : []).flatMap(({ index, title, distanceMeters, x, y }) => {
       // Our re-requested directions reflect traffic a moment later than what
       // Maps shows, so prefer the card's distance to keep both figures equal.
       const card = cards.find((c) => c.index === index);
@@ -91,6 +93,7 @@ function refresh(): void {
       const text = formatEstimate(result, settings.currency, navigator.language);
       return [{ x, y, title, text, selected: index === selected }];
     }),
+    stops,
   );
 }
 

@@ -24,6 +24,9 @@ export interface Viewport {
  */
 const VIEWPORT_PATTERN = /@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?),(\d+(?:\.\d+)?)z(?=[/?#]|$)/;
 
+/** Mean Earth radius in metres. */
+const EARTH_RADIUS_M = 6_371_008.8;
+
 /** Screen size of the whole world at zoom 0, in CSS pixels (Web Mercator tiles). */
 const WORLD_PX_AT_ZOOM_0 = 256;
 
@@ -77,6 +80,31 @@ export function parseDirections(body: string): Route[] {
     routes.push({ title: typeof title === 'string' ? title : '', distanceMeters, path });
   });
   return routes;
+}
+
+/**
+ * Points every `stepMeters` along `path` (not including its start or end), found
+ * by walking its great-circle segment lengths.
+ */
+export function pointsEvery(path: Route['path'], stepMeters: number): Route['path'] {
+  const points: Route['path'] = [];
+  if (!(stepMeters > 0)) return points;
+
+  let walked = 0;
+  let next = stepMeters;
+  for (let i = 1; i < path.length; i++) {
+    const [lat1, lng1] = path[i - 1]!;
+    const [lat2, lng2] = path[i]!;
+    const length = haversine(lat1, lng1, lat2, lng2);
+
+    while (length > 0 && next <= walked + length) {
+      const t = (next - walked) / length;
+      points.push([lat1 + (lat2 - lat1) * t, lng1 + (lng2 - lng1) * t]);
+      next += stepMeters;
+    }
+    walked += length;
+  }
+  return points;
 }
 
 /** Pixel offset of `[lat, lng]` from the centre of the map (Web Mercator). */
@@ -136,6 +164,14 @@ export function labelPoint(
 
 function isNumbers(value: unknown): value is number[] {
   return Array.isArray(value) && value.every((v) => typeof v === 'number');
+}
+
+function haversine(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const rad = Math.PI / 180;
+  const a =
+    Math.sin(((lat2 - lat1) * rad) / 2) ** 2 +
+    Math.cos(lat1 * rad) * Math.cos(lat2 * rad) * Math.sin(((lng2 - lng1) * rad) / 2) ** 2;
+  return 2 * EARTH_RADIUS_M * Math.asin(Math.sqrt(a));
 }
 
 function mercatorX(lng: number): number {

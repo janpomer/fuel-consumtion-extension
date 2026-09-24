@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-const { labelPoint, parseDirections, parseViewport, project, thin } = await import('../dist/lib/route-geo.js');
+const { labelPoint, parseDirections, parseViewport, pointsEvery, project, thin } = await import('../dist/lib/route-geo.js');
 
 test('parses routes and delta-decodes their geometry', () => {
   const body = `)]}'\n${JSON.stringify([
@@ -48,4 +48,14 @@ test('thins points and pins labels where routes diverge', () => {
   assert.deepEqual(labelPoint([main], 0, 1000, 1000), [300, 100]);
   assert.equal(labelPoint([[[0, 0]]], 0, 1000, 1000), null, 'off-screen');
   assert.deepEqual(labelPoint([main], 0, 1000, 1000, [[300, 100]]), [100, 100], 'avoids taken spots');
+});
+
+test('finds points at fixed distances along a path', () => {
+  // One degree of latitude is ~111.2 km.
+  const path = [[0, 0], [1, 0], [2, 0]];
+  const points = pointsEvery(path, 100_000);
+  assert.equal(points.length, 2);
+  assert.ok(Math.abs(points[0][0] - 0.8993) < 1e-3);
+  assert.ok(Math.abs(points[1][0] - 1.7987) < 1e-3);
+  assert.deepEqual(pointsEvery(path, 0), []);
 });

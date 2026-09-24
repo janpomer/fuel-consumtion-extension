@@ -9,6 +9,9 @@ export const DEFAULT_SETTINGS: Settings = {
   showCost: true,
   enabled: true,
   showOnMap: true,
+  showRefuelStops: false,
+  tankLitres: 50,
+  reserveKm: 50,
 };
 
 /** Reads settings, falling back to defaults for anything missing or invalid. */
@@ -39,6 +42,10 @@ export function sanitiseSettings(input: Partial<Settings>): Settings {
     showCost: typeof input.showCost === 'boolean' ? input.showCost : DEFAULT_SETTINGS.showCost,
     enabled: typeof input.enabled === 'boolean' ? input.enabled : DEFAULT_SETTINGS.enabled,
     showOnMap: typeof input.showOnMap === 'boolean' ? input.showOnMap : DEFAULT_SETTINGS.showOnMap,
+    showRefuelStops:
+      typeof input.showRefuelStops === 'boolean' ? input.showRefuelStops : DEFAULT_SETTINGS.showRefuelStops,
+    tankLitres: positiveNumber(input.tankLitres, DEFAULT_SETTINGS.tankLitres),
+    reserveKm: nonNegativeNumber(input.reserveKm, DEFAULT_SETTINGS.reserveKm),
   };
 }
 

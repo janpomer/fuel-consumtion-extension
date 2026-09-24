@@ -17,6 +17,9 @@ test('keeps valid values and preserves flags the caller passes through', () => {
     showCost: false,
     enabled: false,
     showOnMap: false,
+    showRefuelStops: true,
+    tankLitres: 60,
+    reserveKm: 0,
   });
   assert.equal(result.consumption, 6.85);
   assert.equal(result.consumptionUnit, 'mpg_uk');
@@ -26,6 +29,9 @@ test('keeps valid values and preserves flags the caller passes through', () => {
   assert.equal(result.showCost, false);
   assert.equal(result.enabled, false);
   assert.equal(result.showOnMap, false);
+  assert.equal(result.showRefuelStops, true);
+  assert.equal(result.tankLitres, 60);
+  assert.equal(result.reserveKm, 0);
 });
 
 test('replaces invalid values with defaults', () => {

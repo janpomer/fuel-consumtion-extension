@@ -1,4 +1,13 @@
-import { labelPoint, parseDirections, parseViewport, project, thin, type Point, type Route } from '../lib/route-geo.js';
+import {
+  labelPoint,
+  parseDirections,
+  parseViewport,
+  pointsEvery,
+  project,
+  thin,
+  type Point,
+  type Route,
+} from '../lib/route-geo.js';
 
 export interface PlacedRoute {
   /** Position of the route in Maps' list, as used by the `!5i<n>` URL marker. */
@@ -90,27 +99,20 @@ export function findMap(): HTMLElement | null {
   return best?.parentElement ?? null;
 }
 
-/** Where each route's label goes on the map right now; empty while the map moves. */
-export function placeRoutes(map: HTMLElement): PlacedRoute[] {
-  if (staleHref === location.href) return [];
-  staleHref = null;
+/**
+ * Where each route's label goes on the map right now, clear of the spots in
+ * `avoid`; empty while the map moves.
+ */
+export function placeRoutes(map: HTMLElement, avoid: Point[] = []): PlacedRoute[] {
+  const screen = screenOf(map);
+  if (!screen) return [];
 
-  const view = parseViewport(location.href);
-  if (!view) return [];
-
-  const { width, height } = map.getBoundingClientRect();
-  const paths = routes.map((route) =>
-    thin(
-      route.path.map(([lat, lng]) => {
-        const [dx, dy] = project(lat, lng, view);
-        return [width / 2 + dx, height / 2 + dy];
-      }),
-    ),
-  );
+  const { width, height, toScreen } = screen;
+  const paths = routes.map((route) => thin(route.path.map(([lat, lng]) => toScreen(lat, lng))));
 
   // Alternatives pick first: they only tell apart from the main route (Maps'
   // first) where they branch off, while the main route can take any spot left.
-  const taken: Point[] = [];
+  const taken: Point[] = [...avoid];
   return routes
     .map((route, i) => [route, i] as const)
     .reverse()
@@ -122,4 +124,35 @@ export function placeRoutes(map: HTMLElement): PlacedRoute[] {
         { index: i, title: route.title, distanceMeters: route.distanceMeters, x: Math.round(at[0]), y: Math.round(at[1]) },
       ];
     });
+}
+
+/** Where to refuel along route `index`, every `legMeters`; empty while the map moves. */
+export function placeRefuelStops(map: HTMLElement, index: number, legMeters: number): Point[] {
+  const screen = screenOf(map);
+  const route = routes[index];
+  if (!screen || !route) return [];
+
+  return pointsEvery(route.path, legMeters).map(([lat, lng]) => {
+    const [x, y] = screen.toScreen(lat, lng);
+    return [Math.round(x), Math.round(y)];
+  });
+}
+
+/** Map-container pixels for `[lat, lng]`, or `null` while the map moves or the view isn't flat. */
+function screenOf(map: HTMLElement): { width: number; height: number; toScreen: (lat: number, lng: number) => Point } | null {
+  if (staleHref === location.href) return null;
+  staleHref = null;
+
+  const view = parseViewport(location.href);
+  if (!view) return null;
+
+  const { width, height } = map.getBoundingClientRect();
+  return {
+    width,
+    height,
+    toScreen(lat, lng) {
+      const [dx, dy] = project(lat, lng, view);
+      return [width / 2 + dx, height / 2 + dy];
+    },
+  };
 }

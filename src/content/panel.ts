@@ -75,6 +75,21 @@ export function ensureStyles(): void {
     .${MAP_LAYER_CLASS}__pill--selected > span:last-child {
       font-size: 13px;
     }
+    .${MAP_LAYER_CLASS}__stop {
+      position: absolute;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      transform: translate(-50%, -50%);
+      border: 2px solid #ea4335;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      font-size: 13px;
+      line-height: 1;
+    }
     @media (prefers-color-scheme: dark) {
       .${PANEL_CLASS} {
         background: rgba(138, 180, 248, 0.14);
@@ -112,10 +127,11 @@ export function renderEstimate(card: HTMLElement, value: string, tooltip: string
 }
 
 /**
- * Pins one estimate pill per route onto the map. The layer sits inside the map
- * container, so the directions sidebar still covers it like it covers the map.
+ * Pins one estimate pill per route, plus a marker per refuelling stop, onto the
+ * map. The layer sits inside the map container, so the directions sidebar still
+ * covers it like it covers the map.
  */
-export function renderMapLabels(map: HTMLElement, labels: MapLabel[]): void {
+export function renderMapLabels(map: HTMLElement, labels: MapLabel[], stops: [x: number, y: number][]): void {
   let layer = map.querySelector<HTMLElement>(`:scope > .${MAP_LAYER_CLASS}`);
 
   if (!layer) {
@@ -127,7 +143,7 @@ export function renderMapLabels(map: HTMLElement, labels: MapLabel[]): void {
   }
 
   // Skipping unchanged renders also keeps our own mutations from re-triggering refresh.
-  const key = JSON.stringify(labels);
+  const key = JSON.stringify([labels, stops]);
   if (layer.dataset.key === key) return;
   layer.dataset.key = key;
 
@@ -144,6 +160,14 @@ export function renderMapLabels(map: HTMLElement, labels: MapLabel[]): void {
       value.textContent = `⛽ ${text}`;
       pill.append(...(title ? [road] : []), value);
       return pill;
+    }),
+    ...stops.map(([x, y]) => {
+      const stop = document.createElement('div');
+      stop.className = `${MAP_LAYER_CLASS}__stop`;
+      stop.style.left = `${x}px`;
+      stop.style.top = `${y}px`;
+      stop.textContent = '⛽';
+      return stop;
     }),
   );
 }
