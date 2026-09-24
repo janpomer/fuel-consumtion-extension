@@ -99,60 +99,60 @@ export function findMap(): HTMLElement | null {
   return best?.parentElement ?? null;
 }
 
+/** Where each route's label and each refuelling stop go on the map right now. */
+export interface Placement {
+  labels: PlacedRoute[];
+  /** Stops along the selected route, in map-container pixels. */
+  stops: Point[];
+}
+
 /**
- * Where each route's label goes on the map right now, clear of the spots in
- * `avoid`; empty while the map moves.
+ * Places the route labels (when `labels`) and, every `refuel.legMeters` along
+ * route `refuel.index`, a refuelling stop; both empty while the map moves or the
+ * view isn't flat.
  */
-export function placeRoutes(map: HTMLElement, avoid: Point[] = []): PlacedRoute[] {
-  const screen = screenOf(map);
-  if (!screen) return [];
-
-  const { width, height, toScreen } = screen;
-  const paths = routes.map((route) => thin(route.path.map(([lat, lng]) => toScreen(lat, lng))));
-
-  // Alternatives pick first: they only tell apart from the main route (Maps'
-  // first) where they branch off, while the main route can take any spot left.
-  const taken: Point[] = [...avoid];
-  return routes
-    .map((route, i) => [route, i] as const)
-    .reverse()
-    .flatMap(([route, i]) => {
-      const at = labelPoint(paths, i, width, height, taken);
-      if (!at) return [];
-      taken.push(at);
-      return [
-        { index: i, title: route.title, distanceMeters: route.distanceMeters, x: Math.round(at[0]), y: Math.round(at[1]) },
-      ];
-    });
-}
-
-/** Where to refuel along route `index`, every `legMeters`; empty while the map moves. */
-export function placeRefuelStops(map: HTMLElement, index: number, legMeters: number): Point[] {
-  const screen = screenOf(map);
-  const route = routes[index];
-  if (!screen || !route) return [];
-
-  return pointsEvery(route.path, legMeters).map(([lat, lng]) => {
-    const [x, y] = screen.toScreen(lat, lng);
-    return [Math.round(x), Math.round(y)];
-  });
-}
-
-/** Map-container pixels for `[lat, lng]`, or `null` while the map moves or the view isn't flat. */
-function screenOf(map: HTMLElement): { width: number; height: number; toScreen: (lat: number, lng: number) => Point } | null {
-  if (staleHref === location.href) return null;
+export function placeOnMap(
+  map: HTMLElement,
+  labels: boolean,
+  refuel: { index: number; legMeters: number } | null,
+): Placement {
+  const none: Placement = { labels: [], stops: [] };
+  if (staleHref === location.href) return none;
   staleHref = null;
 
   const view = parseViewport(location.href);
-  if (!view) return null;
+  if (!view) return none;
 
   const { width, height } = map.getBoundingClientRect();
+  const toScreen = ([lat, lng]: Route['path'][number]): Point => {
+    const [dx, dy] = project(lat, lng, view);
+    return [width / 2 + dx, height / 2 + dy];
+  };
+  const round = ([x, y]: Point): Point => [Math.round(x), Math.round(y)];
+
+  const stopRoute = refuel ? routes[refuel.index] : undefined;
+  const stops =
+    refuel && stopRoute
+      ? pointsEvery(stopRoute.path, refuel.legMeters, stopRoute.distanceMeters).map(toScreen).map(round)
+      : [];
+  if (!labels) return { labels: [], stops };
+
+  const paths = routes.map((route) => thin(route.path.map(toScreen)));
+
+  // Alternatives pick first: they only tell apart from the main route (Maps'
+  // first) where they branch off, while the main route can take any spot left.
+  const taken: Point[] = [];
   return {
-    width,
-    height,
-    toScreen(lat, lng) {
-      const [dx, dy] = project(lat, lng, view);
-      return [width / 2 + dx, height / 2 + dy];
-    },
+    stops,
+    labels: routes
+      .map((route, i) => [route, i] as const)
+      .reverse()
+      .flatMap(([route, i]) => {
+        const at = labelPoint(paths, i, width, height, taken, stops);
+        if (!at) return [];
+        taken.push(at);
+        const [x, y] = round(at);
+        return [{ index: i, title: route.title, distanceMeters: route.distanceMeters, x, y }];
+      }),
   };
 }

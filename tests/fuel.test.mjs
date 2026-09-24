@@ -55,4 +55,5 @@ test('spaces refuelling stops by a full tank minus the reserve', () => {
   assert.equal(refuelLegMeters({ ...base, consumption: 5, tankLitres: 50, reserveKm: 100 }), 900_000);
   assert.equal(refuelLegMeters({ ...base, consumption: 5, tankLitres: 50, reserveKm: 1000 }), null);
   assert.equal(refuelLegMeters({ ...base, consumption: 5, tankLitres: 0, reserveKm: 0 }), null);
+  assert.equal(refuelLegMeters({ ...base, consumption: 20, consumptionUnit: 'km_per_l', tankLitres: 50, reserveKm: 100 }), 900_000);
 });

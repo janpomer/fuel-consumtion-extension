@@ -36,6 +36,9 @@ const EDGE_MARGIN_PX = 48;
 /** Roughly one label's footprint; two labels closer than this overlap. */
 const LABEL_SPACING_PX: Point = [190, 48];
 
+/** A label this close to a 24 px marker overlaps it (the label hangs 10 px below its anchor). */
+const MARKER_SPACING_PX: Point = [110, 60];
+
 export function parseViewport(url: string): Viewport | null {
   const match = VIEWPORT_PATTERN.exec(url);
   if (!match) return null;
@@ -84,26 +87,29 @@ export function parseDirections(body: string): Route[] {
 
 /**
  * Points every `stepMeters` along `path` (not including its start or end), found
- * by walking its great-circle segment lengths.
+ * by walking its great-circle segment lengths. Those chords add up to less than
+ * the road, so pass the real `pathMeters` to place the points by road distance.
  */
-export function pointsEvery(path: Route['path'], stepMeters: number): Route['path'] {
+export function pointsEvery(path: Route['path'], stepMeters: number, pathMeters?: number): Route['path'] {
   const points: Route['path'] = [];
   if (!(stepMeters > 0)) return points;
 
-  let walked = 0;
-  let next = stepMeters;
-  for (let i = 1; i < path.length; i++) {
-    const [lat1, lng1] = path[i - 1]!;
-    const [lat2, lng2] = path[i]!;
-    const length = haversine(lat1, lng1, lat2, lng2);
+  const lengths = path.slice(1).map(([lat, lng], i) => haversine(path[i]![0], path[i]![1], lat, lng));
+  const chord = lengths.reduce((sum, length) => sum + length, 0);
+  const step = pathMeters && pathMeters > 0 && chord > 0 ? (stepMeters * chord) / pathMeters : stepMeters;
 
+  let walked = 0;
+  let next = step;
+  lengths.forEach((length, i) => {
+    const [lat1, lng1] = path[i]!;
+    const [lat2, lng2] = path[i + 1]!;
     while (length > 0 && next <= walked + length) {
       const t = (next - walked) / length;
       points.push([lat1 + (lat2 - lat1) * t, lng1 + (lng2 - lng1) * t]);
-      next += stepMeters;
+      next += step;
     }
     walked += length;
-  }
+  });
   return points;
 }
 
@@ -126,8 +132,8 @@ export function thin(points: Point[], minGap = 16): Point[] {
 /**
  * Where to pin the label of `paths[index]`: its on-screen point farthest from
  * every other route, so alternatives sharing a highway still get separate
- * labels, and clear of the labels already placed at `taken`. A lone route gets
- * the middle of its on-screen part.
+ * labels, and clear of the labels already placed at `taken` and the markers at
+ * `markers`. A lone route gets the middle of its on-screen part.
  */
 export function labelPoint(
   paths: Point[][],
@@ -135,6 +141,7 @@ export function labelPoint(
   width: number,
   height: number,
   taken: Point[] = [],
+  markers: Point[] = [],
 ): Point | null {
   const visible = (paths[index] ?? []).filter(
     ([x, y]) =>
@@ -142,7 +149,8 @@ export function labelPoint(
       x <= width - EDGE_MARGIN_PX &&
       y >= EDGE_MARGIN_PX &&
       y <= height - EDGE_MARGIN_PX &&
-      taken.every(([tx, ty]) => Math.abs(tx - x) >= LABEL_SPACING_PX[0] || Math.abs(ty - y) >= LABEL_SPACING_PX[1]),
+      clearOf(taken, LABEL_SPACING_PX, x, y) &&
+      clearOf(markers, MARKER_SPACING_PX, x, y),
   );
   let best = visible[visible.length >> 1] ?? null;
   if (paths.length < 2) return best;
@@ -160,6 +168,10 @@ export function labelPoint(
     }
   }
   return best;
+}
+
+function clearOf(spots: Point[], [dx, dy]: Point, x: number, y: number): boolean {
+  return spots.every(([sx, sy]) => Math.abs(sx - x) >= dx || Math.abs(sy - y) >= dy);
 }
 
 function isNumbers(value: unknown): value is number[] {

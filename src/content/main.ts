@@ -2,7 +2,7 @@ import { estimate, refuelLegMeters } from '../lib/fuel.js';
 import { formatEstimate } from '../lib/format.js';
 import { DEFAULT_SETTINGS, loadSettings, onSettingsChanged } from '../lib/settings.js';
 import type { ConsumptionUnit, Settings } from '../lib/types.js';
-import { findMap, placeRefuelStops, placeRoutes, watchRoutes } from './map-routes.js';
+import { findMap, placeOnMap, watchRoutes } from './map-routes.js';
 import { findRouteCards, isDirectionsView, isDrivingMode, selectedRouteIndex } from './maps-dom.js';
 import { ensureStyles, removeAllEstimates, renderEstimate, renderMapLabels } from './panel.js';
 
@@ -81,10 +81,10 @@ function refresh(): void {
   if (!map) return;
   const selected = selectedRouteIndex();
   const leg = settings.showRefuelStops ? refuelLegMeters(settings) : null;
-  const stops = leg ? placeRefuelStops(map, selected, leg) : [];
+  const { labels, stops } = placeOnMap(map, settings.showOnMap, leg ? { index: selected, legMeters: leg } : null);
   renderMapLabels(
     map,
-    (settings.showOnMap ? placeRoutes(map, stops) : []).flatMap(({ index, title, distanceMeters, x, y }) => {
+    labels.flatMap(({ index, title, distanceMeters, x, y }) => {
       // Our re-requested directions reflect traffic a moment later than what
       // Maps shows, so prefer the card's distance to keep both figures equal.
       const card = cards.find((c) => c.index === index);

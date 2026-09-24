@@ -81,6 +81,8 @@ function read(): Settings {
 }
 
 function updatePreview(): void {
+  // The refuelling figures only matter, and so only block saving, while the stops are on.
+  fields.tankLitres.required = fields.reserveKm.required = fields.showRefuelStops.checked;
   // An empty or out-of-range field would otherwise preview the default value.
   renderPreview(preview, form.checkValidity() ? read() : null);
 }

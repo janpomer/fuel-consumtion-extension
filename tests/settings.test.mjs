@@ -42,6 +42,9 @@ test('replaces invalid values with defaults', () => {
     priceUnit: 'per_barrel',
     currency: 42,
     showCost: 'yes',
+    showRefuelStops: 'yes',
+    tankLitres: 0,
+    reserveKm: -1,
   });
   assert.deepEqual(result, DEFAULT_SETTINGS);
 });

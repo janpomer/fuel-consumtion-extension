@@ -1,3 +1,5 @@
+import type { Point } from '../lib/route-geo.js';
+
 const STYLE_ID = 'fce-styles';
 const PANEL_CLASS = 'fce-estimate';
 const MAP_LAYER_CLASS = 'fce-map-labels';
@@ -131,7 +133,7 @@ export function renderEstimate(card: HTMLElement, value: string, tooltip: string
  * map. The layer sits inside the map container, so the directions sidebar still
  * covers it like it covers the map.
  */
-export function renderMapLabels(map: HTMLElement, labels: MapLabel[], stops: [x: number, y: number][]): void {
+export function renderMapLabels(map: HTMLElement, labels: MapLabel[], stops: Point[]): void {
   let layer = map.querySelector<HTMLElement>(`:scope > .${MAP_LAYER_CLASS}`);
 
   if (!layer) {

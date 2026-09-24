@@ -48,6 +48,8 @@ test('thins points and pins labels where routes diverge', () => {
   assert.deepEqual(labelPoint([main], 0, 1000, 1000), [300, 100]);
   assert.equal(labelPoint([[[0, 0]]], 0, 1000, 1000), null, 'off-screen');
   assert.deepEqual(labelPoint([main], 0, 1000, 1000, [[300, 100]]), [100, 100], 'avoids taken spots');
+  assert.deepEqual(labelPoint([main], 0, 1000, 1000, [], [[300, 100]]), [100, 100], 'avoids markers');
+  assert.deepEqual(labelPoint([main], 0, 1000, 1000, [], [[300, 20]]), [300, 100], 'markers take less room than labels');
 });
 
 test('finds points at fixed distances along a path', () => {
@@ -58,4 +60,6 @@ test('finds points at fixed distances along a path', () => {
   assert.ok(Math.abs(points[0][0] - 0.8993) < 1e-3);
   assert.ok(Math.abs(points[1][0] - 1.7987) < 1e-3);
   assert.deepEqual(pointsEvery(path, 0), []);
+  // The road is twice as long as the chords: stops come twice as often along them.
+  assert.equal(pointsEvery(path, 100_000, 444_780).length, 4);
 });
