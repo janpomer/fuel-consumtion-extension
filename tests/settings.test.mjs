@@ -16,6 +16,7 @@ test('keeps valid values and preserves flags the caller passes through', () => {
     currency: '£',
     showCost: false,
     enabled: false,
+    showOnMap: false,
   });
   assert.equal(result.consumption, 6.85);
   assert.equal(result.consumptionUnit, 'mpg_uk');
@@ -24,6 +25,7 @@ test('keeps valid values and preserves flags the caller passes through', () => {
   assert.equal(result.currency, '£');
   assert.equal(result.showCost, false);
   assert.equal(result.enabled, false);
+  assert.equal(result.showOnMap, false);
 });
 
 test('replaces invalid values with defaults', () => {

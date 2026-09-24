@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   currency: '€',
   showCost: true,
   enabled: true,
+  showOnMap: true,
 };
 
 /** Reads settings, falling back to defaults for anything missing or invalid. */
@@ -37,6 +38,7 @@ export function sanitiseSettings(input: Partial<Settings>): Settings {
     currency: typeof input.currency === 'string' ? input.currency.slice(0, 8) : DEFAULT_SETTINGS.currency,
     showCost: typeof input.showCost === 'boolean' ? input.showCost : DEFAULT_SETTINGS.showCost,
     enabled: typeof input.enabled === 'boolean' ? input.enabled : DEFAULT_SETTINGS.enabled,
+    showOnMap: typeof input.showOnMap === 'boolean' ? input.showOnMap : DEFAULT_SETTINGS.showOnMap,
   };
 }
 

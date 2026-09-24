@@ -30,7 +30,8 @@ export async function init(): Promise<void> {
   });
 
   observeMaps();
-  watchRoutes(refresh);
+  // ponytail: turning the map option on shows labels from the next route change, not the current one.
+  watchRoutes(refresh, () => settings.enabled && settings.showOnMap);
   refresh();
 }
 
@@ -81,7 +82,7 @@ function refresh(): void {
   const selected = selectedRouteIndex();
   renderMapLabels(
     map,
-    placeRoutes(map).flatMap(({ index, title, distanceMeters, x, y }) => {
+    (settings.showOnMap ? placeRoutes(map) : []).flatMap(({ index, title, distanceMeters, x, y }) => {
       // Our re-requested directions reflect traffic a moment later than what
       // Maps shows, so prefer the card's distance to keep both figures equal.
       const card = cards.find((c) => c.index === index);

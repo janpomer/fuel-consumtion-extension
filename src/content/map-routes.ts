@@ -27,9 +27,10 @@ let staleHref: string | null = null;
 /**
  * Keeps `routes` in sync with the directions Maps shows. Maps draws routes in a
  * worker-owned canvas, so the geometry is only available from its own
- * same-origin directions request, which we re-request once per route change.
+ * same-origin directions request, which we re-request once per route change
+ * while `wanted()` is true.
  */
-export function watchRoutes(onChange: () => void): void {
+export function watchRoutes(onChange: () => void, wanted: () => boolean): void {
   let latest = 0;
   // Our own re-request shows up as a resource entry too; without this check it
   // would trigger itself forever.
@@ -37,7 +38,7 @@ export function watchRoutes(onChange: () => void): void {
 
   new PerformanceObserver((list) => {
     for (const entry of list.getEntries()) {
-      if (!entry.name.includes(DIRECTIONS_PATH) || entry.name === lastUrl) continue;
+      if (!wanted() || !entry.name.includes(DIRECTIONS_PATH) || entry.name === lastUrl) continue;
       lastUrl = entry.name;
 
       const ticket = ++latest;

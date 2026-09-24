@@ -10,6 +10,7 @@ const fields = {
   currency: byId<HTMLInputElement>('currency'),
   showCost: byId<HTMLInputElement>('showCost'),
   enabled: byId<HTMLInputElement>('enabled'),
+  showOnMap: byId<HTMLInputElement>('showOnMap'),
 };
 const form = byId<HTMLFormElement>('form');
 const preview = byId<HTMLElement>('preview');
@@ -54,6 +55,7 @@ function fill(settings: Settings): void {
   fields.currency.value = settings.currency;
   fields.showCost.checked = settings.showCost;
   fields.enabled.checked = settings.enabled;
+  fields.showOnMap.checked = settings.showOnMap;
 }
 
 function read(): Settings {
@@ -65,6 +67,7 @@ function read(): Settings {
     currency: fields.currency.value,
     showCost: fields.showCost.checked,
     enabled: fields.enabled.checked,
+    showOnMap: fields.showOnMap.checked,
   });
 }
 

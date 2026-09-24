@@ -12,7 +12,8 @@ via D1
 
 The same figure is also pinned onto each route drawn on the map, labelled with
 the road names so alternatives can be told apart; the selected route's label is
-highlighted.
+highlighted. Turn the map labels off in the options page if you only want the
+route cards.
 
 You configure your car's average consumption and your local fuel price once; the
 extension reads the route distance that Maps already renders and does the math.

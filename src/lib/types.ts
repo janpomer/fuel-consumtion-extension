@@ -19,6 +19,8 @@ export interface Settings {
   showCost: boolean;
   /** Show the estimate at all (kill switch without uninstalling). */
   enabled: boolean;
+  /** Also pin the estimate onto the routes drawn on the map, not only the route cards. */
+  showOnMap: boolean;
 }
 
 /** A route estimate, always kept in SI internally. */
